@@ -42,6 +42,9 @@ func (p *Producto) ActualizarPrecio(precioUnitario float64) {
 	p.calcularSubtotal()
 }
 
+// El subtotal se mantiene calculado dentro de la entidad para evitar
+// que otras capas tengan que modificar directamente este valor.
+// La fórmula corresponde a cantidad por precio unitario.
 func (p *Producto) calcularSubtotal() {
 	p.subtotal = float64(p.cantidad) * p.precioUnitario
 }

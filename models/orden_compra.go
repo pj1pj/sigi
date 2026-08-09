@@ -63,6 +63,9 @@ func (o *OrdenCompra) AgregarProducto(producto *Producto) {
 	o.CalcularTotal()
 }
 
+// El total se calcula a partir de los subtotales de todos los productos.
+// De esta forma, el total de la orden no depende de un valor ingresado
+// directamente por el usuario.
 func (o *OrdenCompra) CalcularTotal() {
 	o.total = 0
 

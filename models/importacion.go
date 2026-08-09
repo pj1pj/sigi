@@ -32,14 +32,21 @@ func NuevaImportacion(
 	fechaRegistro := time.Now()
 
 	return &Importacion{
-		codigo:               codigo,
-		orden:                orden,
-		transporte:           transporte,
-		ciudadOrigen:         ciudadOrigen,
-		ciudadDestino:        ciudadDestino,
-		fechaRegistro:        fechaRegistro,
+		codigo:        codigo,
+		orden:         orden,
+		transporte:    transporte,
+		ciudadOrigen:  ciudadOrigen,
+		ciudadDestino: ciudadDestino,
+		fechaRegistro: fechaRegistro,
+
+		// La fecha estimada de llegada no la ingresa el usuario.
+		// SIGI la calcula automáticamente tomando como referencia
+		// la fecha de registro y agregando 30 días.
 		fechaEstimadaLlegada: fechaRegistro.AddDate(0, 0, 30),
-		estado:               ImportacionEnTransito,
+
+		// Toda nueva importación comienza en estado "En tránsito".
+		// Los cambios posteriores se gestionarán mediante el tracking.
+		estado: ImportacionEnTransito,
 	}
 }
 
@@ -75,6 +82,10 @@ func (i *Importacion) Estado() EstadoImportacion {
 	return i.estado
 }
 
+// El estado se modifica mediante este método para mantener
+// encapsulado el estado interno de la importación.
+// La validación de si el cambio es permitido corresponderá
+// posteriormente a la capa de servicios.
 func (i *Importacion) ActualizarEstado(nuevoEstado EstadoImportacion) {
 	i.estado = nuevoEstado
 }

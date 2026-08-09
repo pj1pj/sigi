@@ -57,6 +57,8 @@ func (p *Proveedor) Estado() EstadoProveedor {
 	return p.estado
 }
 
+// El estado se modifica mediante métodos para mantener encapsulado
+// el valor interno del proveedor y evitar cambios directos desde otras capas.
 func (p *Proveedor) Activar() {
 	p.estado = ProveedorActivo
 }
