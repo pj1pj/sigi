@@ -61,7 +61,7 @@ PRV-0003
 
 ---
 
-### 🛒 Órdenes de compra
+### 🛒 Órdenes de compra 
 
 * Crear órdenes asociadas a proveedores.
 * Agregar múltiples productos.
