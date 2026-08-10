@@ -10,7 +10,7 @@ La información se maneja en memoria durante la ejecución y el proyecto utiliza
 
 ---
 
-## Objetivo
+## Objetivo 
 
 Representar de manera sencilla y modular el flujo de una operación de importación, aplicando conceptos de programación orientada a objetos y separación de responsabilidades.
 
