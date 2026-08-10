@@ -333,7 +333,7 @@ Se necesita tener instalado:
 git clone https://github.com/pj1pj/sigi.git
 ```
 
-## 2️⃣ Entrar al proyecto
+## 2️⃣ Entrar al proyecto 
 
 ```bash
 cd sigi/sigi
