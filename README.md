@@ -1,87 +1,42 @@
-Sí bro. Te hago uno **más completo y bonito para GitHub**, con badges, instalación, información general, funcionalidades, estructura, uso, flujo, arquitectura y comandos. Todo en **un solo bloque Markdown** para que copies directamente el `README.md`.
-
-````markdown
 # 🚢 SIGI — Sistema Integral de Gestión de Importaciones
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go">
-  <img src="https://img.shields.io/badge/Console-Application-333333?style=for-the-badge" alt="Console">
-  <img src="https://img.shields.io/badge/Architecture-Modular-6f42c1?style=for-the-badge" alt="Architecture">
-  <img src="https://img.shields.io/badge/Status-Completed-2ea44f?style=for-the-badge" alt="Status">
-</p>
+## Información general
 
-<p align="center">
-  <b>Sistema académico desarrollado en Go para la gestión integral de operaciones de importación.</b>
-</p>
+SIGI es una aplicación de consola desarrollada en Go para gestionar de manera integral diferentes operaciones relacionadas con la importación de mercancías.
+
+El sistema permite administrar proveedores, órdenes de compra, productos, transportes, importaciones, tracking, inventario y reportes.
+
+La información se maneja en memoria durante la ejecución y el proyecto utiliza la biblioteca estándar de Go.
 
 ---
 
-## 📌 Información general
-
-**SIGI** es una aplicación de consola desarrollada en **Go** que permite gestionar diferentes etapas del proceso de importación de mercancías.
-
-El sistema integra:
-
-- 👤 Proveedores
-- 🛒 Órdenes de compra
-- 📦 Productos
-- 🚚 Transportes
-- 🌎 Importaciones
-- 📍 Tracking
-- 🏢 Inventario
-- 📊 Reportes
-
-La información se maneja **en memoria durante la ejecución** y el proyecto utiliza la biblioteca estándar de Go.
-
----
-
-## 🎯 Objetivo
+## Objetivo
 
 Representar de manera sencilla y modular el flujo de una operación de importación, aplicando conceptos de programación orientada a objetos y separación de responsabilidades.
 
 ### Flujo principal
 
-```text
-┌──────────────┐
-│  Proveedor   │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│ Orden compra │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│  Productos   │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│ Confirmación │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│  Transporte  │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│ Importación  │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│   Tracking   │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│   Bodega     │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│  Inventario  │
-└──────┬───────┘
-       ↓
-┌──────────────┐
-│   Reporte    │
-└──────────────┘
-````
+Proveedor
+    ↓
+Orden de compra
+    ↓
+Productos
+    ↓
+Confirmación
+    ↓
+Transporte
+    ↓
+Importación
+    ↓
+Tracking
+    ↓
+Llegada a bodega
+    ↓
+Inventario
+    ↓
+Reporte general
+
+---
 
 ---
 
