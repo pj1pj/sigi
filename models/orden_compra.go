@@ -4,12 +4,14 @@ import "time"
 
 type EstadoOrden string
 
+// Los estados de la orden de compra reflejan su estado en el proceso de compra.
 const (
 	OrdenPendiente  EstadoOrden = "Pendiente"
 	OrdenConfirmada EstadoOrden = "Confirmada"
 	OrdenCancelada  EstadoOrden = "Cancelada"
 )
 
+// La orden de compra representa una solicitud de productos realizada por la empresa a un proveedor.
 type OrdenCompra struct {
 	codigo        string
 	proveedor     *Proveedor
@@ -54,6 +56,7 @@ func (o *OrdenCompra) Estado() EstadoOrden {
 	return o.estado
 }
 
+// AgregarProducto agrega un producto a la orden de compra y recalcula el total.
 func (o *OrdenCompra) AgregarProducto(producto *Producto) {
 	if producto == nil {
 		return
@@ -76,6 +79,7 @@ func (o *OrdenCompra) CalcularTotal() {
 	}
 }
 
+// Confirmar cambia el estado de la orden a "Confirmada".
 func (o *OrdenCompra) Confirmar() {
 	o.estado = OrdenConfirmada
 }

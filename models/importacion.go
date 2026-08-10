@@ -4,6 +4,7 @@ import "time"
 
 type EstadoImportacion string
 
+// Los estados de la importación reflejan el progreso del proceso de importación.
 const (
 	ImportacionEnPreparacion EstadoImportacion = "En preparación"
 	ImportacionEnTransito    EstadoImportacion = "En tránsito"
@@ -11,6 +12,7 @@ const (
 	ImportacionLlegadaBodega EstadoImportacion = "Llegó a bodega"
 )
 
+// La importación representa el proceso de traer productos desde un proveedor extranjero hasta la bodega de la empresa.
 type Importacion struct {
 	codigo               string
 	orden                *OrdenCompra
@@ -22,6 +24,7 @@ type Importacion struct {
 	estado               EstadoImportacion
 }
 
+// NuevaImportacion crea una nueva instancia de Importacion con los datos proporcionados.
 func NuevaImportacion(
 	codigo string,
 	orden *OrdenCompra,
@@ -29,6 +32,7 @@ func NuevaImportacion(
 	ciudadOrigen string,
 	ciudadDestino string,
 ) *Importacion {
+	// La fecha de registro se establece automáticamente al momento de crear la importación.
 	fechaRegistro := time.Now()
 
 	return &Importacion{
@@ -40,7 +44,7 @@ func NuevaImportacion(
 		fechaRegistro: fechaRegistro,
 
 		// La fecha estimada de llegada no la ingresa el usuario.
-		// SIGI la calcula automáticamente tomando como referencia
+
 		// la fecha de registro y agregando 30 días.
 		fechaEstimadaLlegada: fechaRegistro.AddDate(0, 0, 30),
 

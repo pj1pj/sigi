@@ -2,6 +2,7 @@ package models
 
 type EstadoInventario string
 
+// Los estados del inventario reflejan la disponibilidad de los productos en bodega.
 const (
 	InventarioDisponible EstadoInventario = "Disponible"
 	InventarioAgotado    EstadoInventario = "Agotado"
@@ -24,6 +25,7 @@ func NuevoInventario(
 	proveedor *Proveedor,
 	importacion *Importacion,
 	ubicacion string,
+	// El estado del inventario se determina automáticamente en función de la cantidad.
 ) *Inventario {
 	estado := InventarioDisponible
 
@@ -70,6 +72,7 @@ func (i *Inventario) Estado() EstadoInventario {
 	return i.estado
 }
 
+// AgregarCantidad aumenta la cantidad disponible en el inventario.
 func (i *Inventario) AgregarCantidad(cantidad int) {
 	if cantidad <= 0 {
 		return
@@ -79,6 +82,7 @@ func (i *Inventario) AgregarCantidad(cantidad int) {
 	i.actualizarEstado()
 }
 
+// RetirarCantidad disminuye la cantidad disponible en el inventario.
 func (i *Inventario) RetirarCantidad(cantidad int) bool {
 	if cantidad <= 0 || cantidad > i.cantidad {
 		return false
