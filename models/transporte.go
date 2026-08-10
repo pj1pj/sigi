@@ -1,5 +1,6 @@
 package models
 
+// La entidad Transporte representa un medio de transporte utilizado para la importación de productos desde el proveedor hasta la empresa.
 type TipoTransporte string
 
 const (
@@ -26,6 +27,7 @@ type Transporte struct {
 	estado   EstadoTransporte
 }
 
+// NuevaTransporte crea una nueva instancia de Transporte con los datos proporcionados.
 func NuevoTransporte(
 	codigo string,
 	tipo TipoTransporte,
@@ -79,8 +81,7 @@ func (t *Transporte) Estado() EstadoTransporte {
 	return t.estado
 }
 
-// El estado se modifica mediante métodos para mantener encapsulado
-// el valor interno y evitar cambios directos desde otras capas.
+// Los métodos Activar y Desactivar permiten cambiar el estado del transporte entre activo e inactivo.
 func (t *Transporte) Activar() {
 	t.estado = TransporteActivo
 }
@@ -93,6 +94,7 @@ func (t *Transporte) EstaActivo() bool {
 	return t.estado == TransporteActivo
 }
 
+// ActualizarContacto permite modificar los datos de contacto del transporte.
 func (t *Transporte) ActualizarContacto(contacto, telefono, correo string) {
 	t.contacto = contacto
 	t.telefono = telefono

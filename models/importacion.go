@@ -43,13 +43,12 @@ func NuevaImportacion(
 		ciudadDestino: ciudadDestino,
 		fechaRegistro: fechaRegistro,
 
-		// La fecha estimada de llegada no la ingresa el usuario.
+		
 
 		// la fecha de registro y agregando 30 días.
 		fechaEstimadaLlegada: fechaRegistro.AddDate(0, 0, 30),
 
-		// Toda nueva importación comienza en estado "En tránsito".
-		// Los cambios posteriores se gestionarán mediante el tracking.
+		\
 		estado: ImportacionEnTransito,
 	}
 }

@@ -17,6 +17,7 @@ type Proveedor struct {
 	estado   EstadoProveedor
 }
 
+// NuevoProveedor crea una nueva instancia de Proveedor con los datos proporcionados.
 func NuevoProveedor(codigo, empresa, pais, contacto, telefono, correo string) *Proveedor {
 	return &Proveedor{
 		codigo:   codigo,
@@ -71,6 +72,7 @@ func (p *Proveedor) EstaActivo() bool {
 	return p.estado == ProveedorActivo
 }
 
+// ActualizarContacto permite modificar los datos de contacto del proveedor.
 func (p *Proveedor) ActualizarContacto(contacto, telefono, correo string) {
 	p.contacto = contacto
 	p.telefono = telefono
