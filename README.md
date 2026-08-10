@@ -40,7 +40,7 @@ Reporte general
 
 ---
 
-## ✨ Funcionalidades principales
+## ✨ Funcionalidades principales 
 
 ### 👤 Proveedores
 
