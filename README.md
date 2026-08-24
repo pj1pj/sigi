@@ -622,7 +622,8 @@ tarea asíncrona independiente.
 Actualmente los datos se almacenan solo en memoria, no existe autenticación y
 la API no expone todas las operaciones disponibles en los Services, como
 actualización de contactos o cancelación de órdenes. Tampoco hay persistencia,
-paginación ni configuración externa del puerto. Como mejoras futuras se
+paginación ni configuración externa del puerto. Los cuerpos JSON tienen un
+límite de 1 MiB para evitar solicitudes excesivamente grandes. Como mejoras futuras se
 podrían agregar una base de datos, autenticación, apagado graceful, métricas,
 paginación y endpoints adicionales sin trasladar reglas de negocio fuera de
 los Services.
