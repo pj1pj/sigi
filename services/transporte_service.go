@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"sigi/interfaces"
@@ -33,23 +33,27 @@ func (s *TransporteService) Registrar(
 	correo string,
 ) (*models.Transporte, error) {
 	if !tipoValido(tipo) {
-		return nil, errors.New("el tipo de transporte no es valido")
+		return nil, fmt.Errorf("%w: el tipo de transporte no es válido", utils.ErrDatoInvalido)
 	}
 
-	if strings.TrimSpace(empresa) == "" {
-		return nil, errors.New("la empresa de transporte es obligatoria")
+	if !utils.TextoValido(empresa) {
+		return nil, fmt.Errorf("%w: la empresa de transporte es obligatoria", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(pais) == "" {
-		return nil, errors.New("el pais del transporte es obligatorio")
+	if !utils.TextoValido(pais) {
+		return nil, fmt.Errorf("%w: el pais del transporte es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(contacto) == "" {
-		return nil, errors.New("el contacto del transporte es obligatorio")
+	if !utils.TextoValido(contacto) {
+		return nil, fmt.Errorf("%w: el contacto del transporte es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(telefono) == "" {
-		return nil, errors.New("el telefono del transporte es obligatorio")
+	if !utils.TelefonoValido(telefono) {
+		return nil, fmt.Errorf("%w: el telefono del transporte no es válido", utils.ErrDatoInvalido)
+	}
+
+	if strings.TrimSpace(correo) != "" && !utils.CorreoValido(correo) {
+		return nil, fmt.Errorf("%w: el correo del transporte no es válido", utils.ErrDatoInvalido)
 	}
 
 	codigo := s.generador.Generar("TRN")
@@ -73,7 +77,7 @@ func (s *TransporteService) Registrar(
 
 func (s *TransporteService) Buscar(codigo string) (*models.Transporte, error) {
 	if strings.TrimSpace(codigo) == "" {
-		return nil, errors.New("el codigo del transporte es obligatorio")
+		return nil, fmt.Errorf("%w: el codigo del transporte es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	return s.repository.BuscarPorCodigo(codigo)
@@ -112,11 +116,11 @@ func (s *TransporteService) ActualizarContacto(
 	correo string,
 ) error {
 	if strings.TrimSpace(contacto) == "" {
-		return errors.New("el contacto es obligatorio")
+		return fmt.Errorf("%w: el contacto es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if strings.TrimSpace(telefono) == "" {
-		return errors.New("el telefono es obligatorio")
+		return fmt.Errorf("%w: el telefono no es válido", utils.ErrDatoInvalido)
 	}
 
 	transporte, err := s.Buscar(codigo)
@@ -136,7 +140,7 @@ func (s *TransporteService) Eliminar(codigo string) error {
 	}
 
 	if transporte.EstaActivo() {
-		return errors.New("no se puede eliminar un transporte activo")
+		return fmt.Errorf("%w: no se puede eliminar un transporte activo", utils.ErrOperacionNoPermitida)
 	}
 
 	return s.repository.Eliminar(codigo)

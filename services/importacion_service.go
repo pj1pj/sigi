@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"sigi/interfaces"
@@ -34,27 +34,27 @@ func (s *ImportacionService) Registrar(
 	ciudadDestino string,
 ) (*models.Importacion, error) {
 	if orden == nil {
-		return nil, errors.New("la orden de compra es obligatoria")
+		return nil, fmt.Errorf("%w: la orden de compra es obligatoria", utils.ErrDatoObligatorio)
 	}
 
 	if transporte == nil {
-		return nil, errors.New("el transporte es obligatorio")
+		return nil, fmt.Errorf("%w: el transporte es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if !orden.EstaConfirmada() {
-		return nil, errors.New("la orden debe estar confirmada para crear una importacion")
+		return nil, fmt.Errorf("%w: la orden debe estar confirmada para crear una importacion", utils.ErrOperacionNoPermitida)
 	}
 
 	if !transporte.EstaActivo() {
-		return nil, errors.New("no se puede utilizar un transporte inactivo")
+		return nil, fmt.Errorf("%w: no se puede utilizar un transporte inactivo", utils.ErrOperacionNoPermitida)
 	}
 
-	if strings.TrimSpace(ciudadOrigen) == "" {
-		return nil, errors.New("la ciudad de origen es obligatoria")
+	if !utils.TextoValido(ciudadOrigen) {
+		return nil, fmt.Errorf("%w: la ciudad de origen es obligatoria", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(ciudadDestino) == "" {
-		return nil, errors.New("la ciudad de destino es obligatoria")
+	if !utils.TextoValido(ciudadDestino) {
+		return nil, fmt.Errorf("%w: la ciudad de destino es obligatoria", utils.ErrDatoObligatorio)
 	}
 
 	codigo := s.generador.Generar("IMP")
@@ -76,7 +76,7 @@ func (s *ImportacionService) Registrar(
 
 func (s *ImportacionService) Buscar(codigo string) (*models.Importacion, error) {
 	if strings.TrimSpace(codigo) == "" {
-		return nil, errors.New("el codigo de la importacion es obligatorio")
+		return nil, fmt.Errorf("%w: el codigo de la importacion es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	return s.repository.BuscarPorCodigo(codigo)
@@ -97,32 +97,36 @@ func (s *ImportacionService) ActualizarTracking(
 	}
 
 	if !estadoValido(nuevoEstado) {
-		return errors.New("el estado de importacion no es valido")
+		return fmt.Errorf("%w: el estado de importacion no es válido", utils.ErrDatoInvalido)
 	}
 
 	if !transicionPermitida(importacion.Estado(), nuevoEstado) {
-		return errors.New("la transicion de estado no esta permitida")
+		return fmt.Errorf("%w: la transicion de estado no esta permitida", utils.ErrOperacionNoPermitida)
 	}
 
 	if nuevoEstado == models.ImportacionLlegadaBodega &&
-		strings.TrimSpace(ubicacion) == "" {
-		return errors.New("la ubicacion de bodega es obligatoria")
+		!utils.TextoValido(ubicacion) {
+		return fmt.Errorf("%w: la ubicacion de bodega es obligatoria", utils.ErrDatoObligatorio)
 	}
 
+	estadoAnterior := importacion.Estado()
 	importacion.ActualizarEstado(nuevoEstado)
-
-	if err := s.repository.Actualizar(importacion); err != nil {
-		return err
-	}
 
 	if nuevoEstado == models.ImportacionLlegadaBodega {
 		if s.inventarioService == nil {
-			return errors.New("el servicio de inventario no esta configurado")
+			importacion.ActualizarEstado(estadoAnterior)
+			return fmt.Errorf("%w: el servicio de inventario no esta configurado", utils.ErrOperacionNoPermitida)
 		}
 
 		if err := s.inventarioService.ProcesarLlegada(importacion, ubicacion); err != nil {
+			importacion.ActualizarEstado(estadoAnterior)
 			return err
 		}
+	}
+
+	if err := s.repository.Actualizar(importacion); err != nil {
+		importacion.ActualizarEstado(estadoAnterior)
+		return err
 	}
 
 	return nil

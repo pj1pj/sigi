@@ -2,12 +2,16 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"sync"
 
 	"sigi/interfaces"
 	"sigi/models"
+	"sigi/utils"
 )
 
 type ImportacionRepositoryMemoria struct {
+	mu            sync.RWMutex
 	importaciones []*models.Importacion
 }
 
@@ -18,12 +22,16 @@ func NuevaImportacionRepository() interfaces.ImportacionRepository {
 }
 
 func (r *ImportacionRepositoryMemoria) Agregar(importacion *models.Importacion) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if importacion == nil {
 		return errors.New("la importación no puede ser nil")
 	}
 
-	if _, err := r.BuscarPorCodigo(importacion.Codigo()); err == nil {
-		return errors.New("ya existe una importación con ese código")
+	for _, existente := range r.importaciones {
+		if existente.Codigo() == importacion.Codigo() {
+			return fmt.Errorf("%w: ya existe una importación con ese código", utils.ErrRegistroDuplicado)
+		}
 	}
 
 	r.importaciones = append(r.importaciones, importacion)
@@ -32,20 +40,26 @@ func (r *ImportacionRepositoryMemoria) Agregar(importacion *models.Importacion) 
 }
 
 func (r *ImportacionRepositoryMemoria) BuscarPorCodigo(codigo string) (*models.Importacion, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	for _, importacion := range r.importaciones {
 		if importacion.Codigo() == codigo {
 			return importacion, nil
 		}
 	}
 
-	return nil, errors.New("importación no encontrada")
+	return nil, fmt.Errorf("%w: importación no encontrada", utils.ErrRegistroNoEncontrado)
 }
 
 func (r *ImportacionRepositoryMemoria) ObtenerTodos() []*models.Importacion {
-	return r.importaciones
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return append([]*models.Importacion(nil), r.importaciones...)
 }
 
 func (r *ImportacionRepositoryMemoria) Actualizar(importacion *models.Importacion) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if importacion == nil {
 		return errors.New("la importación no puede ser nil")
 	}
@@ -57,10 +71,12 @@ func (r *ImportacionRepositoryMemoria) Actualizar(importacion *models.Importacio
 		}
 	}
 
-	return errors.New("importación no encontrada")
+	return fmt.Errorf("%w: importación no encontrada", utils.ErrRegistroNoEncontrado)
 }
 
 func (r *ImportacionRepositoryMemoria) Eliminar(codigo string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	for indice, importacion := range r.importaciones {
 		if importacion.Codigo() == codigo {
 			r.importaciones = append(
@@ -71,5 +87,5 @@ func (r *ImportacionRepositoryMemoria) Eliminar(codigo string) error {
 		}
 	}
 
-	return errors.New("importación no encontrada")
+	return fmt.Errorf("%w: importación no encontrada", utils.ErrRegistroNoEncontrado)
 }

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"sigi/interfaces"
@@ -28,11 +28,11 @@ func (s *OrdenService) Crear(
 	proveedor *models.Proveedor,
 ) (*models.OrdenCompra, error) {
 	if proveedor == nil {
-		return nil, errors.New("el proveedor es obligatorio")
+		return nil, fmt.Errorf("%w: el proveedor es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if !proveedor.EstaActivo() {
-		return nil, errors.New("no se puede crear una orden con un proveedor inactivo")
+		return nil, fmt.Errorf("%w: no se puede crear una orden con un proveedor inactivo", utils.ErrOperacionNoPermitida)
 	}
 
 	codigo := s.generador.Generar("ORD")
@@ -48,7 +48,7 @@ func (s *OrdenService) Crear(
 
 func (s *OrdenService) Buscar(codigo string) (*models.OrdenCompra, error) {
 	if strings.TrimSpace(codigo) == "" {
-		return nil, errors.New("el codigo de la orden es obligatorio")
+		return nil, fmt.Errorf("%w: el codigo de la orden es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	return s.repository.BuscarPorCodigo(codigo)
@@ -63,15 +63,15 @@ func (s *OrdenService) AgregarProducto(
 	producto *models.Producto,
 ) error {
 	if producto == nil {
-		return errors.New("el producto es obligatorio")
+		return fmt.Errorf("%w: el producto es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if producto.Cantidad() <= 0 {
-		return errors.New("la cantidad del producto debe ser mayor que cero")
+	if !utils.CantidadValida(producto.Cantidad()) {
+		return fmt.Errorf("%w: la cantidad del producto debe ser mayor que cero", utils.ErrDatoInvalido)
 	}
 
-	if producto.PrecioUnitario() <= 0 {
-		return errors.New("el precio unitario debe ser mayor que cero")
+	if !utils.PrecioValido(producto.PrecioUnitario()) {
+		return fmt.Errorf("%w: el precio unitario debe ser mayor que cero", utils.ErrDatoInvalido)
 	}
 
 	orden, err := s.Buscar(codigoOrden)
@@ -80,7 +80,7 @@ func (s *OrdenService) AgregarProducto(
 	}
 
 	if orden.EstaCancelada() {
-		return errors.New("no se pueden agregar productos a una orden cancelada")
+		return fmt.Errorf("%w: no se pueden agregar productos a una orden cancelada", utils.ErrOperacionNoPermitida)
 	}
 
 	orden.AgregarProducto(producto)
@@ -95,11 +95,11 @@ func (s *OrdenService) Confirmar(codigo string) error {
 	}
 
 	if len(orden.Productos()) == 0 {
-		return errors.New("no se puede confirmar una orden sin productos")
+		return fmt.Errorf("%w: no se puede confirmar una orden sin productos", utils.ErrOperacionNoPermitida)
 	}
 
 	if orden.EstaCancelada() {
-		return errors.New("no se puede confirmar una orden cancelada")
+		return fmt.Errorf("%w: no se puede confirmar una orden cancelada", utils.ErrOperacionNoPermitida)
 	}
 
 	orden.Confirmar()
@@ -114,7 +114,7 @@ func (s *OrdenService) Cancelar(codigo string) error {
 	}
 
 	if orden.EstaConfirmada() {
-		return errors.New("no se puede cancelar una orden confirmada")
+		return fmt.Errorf("%w: no se puede cancelar una orden confirmada", utils.ErrOperacionNoPermitida)
 	}
 
 	orden.Cancelar()

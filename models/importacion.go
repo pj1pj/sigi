@@ -42,14 +42,11 @@ func NuevaImportacion(
 		ciudadOrigen:  ciudadOrigen,
 		ciudadDestino: ciudadDestino,
 		fechaRegistro: fechaRegistro,
-
-		
-
-		// la fecha de registro y agregando 30 días.
+		// La fecha estimada se calcula a partir de la fecha de registro.
 		fechaEstimadaLlegada: fechaRegistro.AddDate(0, 0, 30),
-
-		\
-		estado: ImportacionEnTransito,
+		// Una importación comienza en preparación para respetar el flujo
+		// Preparación -> Tránsito -> Aduana -> Llegada a bodega.
+		estado: ImportacionEnPreparacion,
 	}
 }
 

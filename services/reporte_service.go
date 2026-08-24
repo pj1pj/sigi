@@ -6,22 +6,23 @@ import (
 )
 
 type ReporteGeneral struct {
-	TotalProveedores         int
-	ProveedoresActivos       int
-	ProveedoresInactivos     int
-	TotalOrdenes             int
-	OrdenesConfirmadas       int
-	OrdenesCanceladas        int
-	TotalCompras             float64
-	TotalTransportes         int
-	TransportesActivos       int
-	TransportesInactivos     int
-	TotalImportaciones       int
-	ImportacionesEnTransito  int
-	ImportacionesEnAduana    int
-	ImportacionesEnBodega    int
-	TotalRegistrosInventario int
-	TotalUnidadesInventario  int
+	TotalProveedores           int
+	ProveedoresActivos         int
+	ProveedoresInactivos       int
+	TotalOrdenes               int
+	OrdenesConfirmadas         int
+	OrdenesCanceladas          int
+	TotalCompras               float64
+	TotalTransportes           int
+	TransportesActivos         int
+	TransportesInactivos       int
+	TotalImportaciones         int
+	ImportacionesEnPreparacion int
+	ImportacionesEnTransito    int
+	ImportacionesEnAduana      int
+	ImportacionesEnBodega      int
+	TotalRegistrosInventario   int
+	TotalUnidadesInventario    int
 }
 
 type ReporteService struct {
@@ -95,6 +96,9 @@ func (s *ReporteService) General() ReporteGeneral {
 		switch importacion.Estado() {
 		case models.ImportacionEnTransito:
 			reporte.ImportacionesEnTransito++
+
+		case models.ImportacionEnPreparacion:
+			reporte.ImportacionesEnPreparacion++
 
 		case models.ImportacionEnAduana:
 			reporte.ImportacionesEnAduana++

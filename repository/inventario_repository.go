@@ -2,12 +2,16 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"sync"
 
 	"sigi/interfaces"
 	"sigi/models"
+	"sigi/utils"
 )
 
 type InventarioRepositoryMemoria struct {
+	mu          sync.RWMutex
 	inventarios []*models.Inventario
 }
 
@@ -18,6 +22,8 @@ func NuevoInventarioRepository() interfaces.InventarioRepository {
 }
 
 func (r *InventarioRepositoryMemoria) Agregar(inventario *models.Inventario) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if inventario == nil {
 		return errors.New("el registro de inventario no puede ser nil")
 	}
@@ -28,10 +34,14 @@ func (r *InventarioRepositoryMemoria) Agregar(inventario *models.Inventario) err
 }
 
 func (r *InventarioRepositoryMemoria) ObtenerTodos() []*models.Inventario {
-	return r.inventarios
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return append([]*models.Inventario(nil), r.inventarios...)
 }
 
 func (r *InventarioRepositoryMemoria) Actualizar(inventario *models.Inventario) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if inventario == nil {
 		return errors.New("el registro de inventario no puede ser nil")
 	}
@@ -43,7 +53,7 @@ func (r *InventarioRepositoryMemoria) Actualizar(inventario *models.Inventario) 
 		}
 	}
 
-	return errors.New("registro de inventario no encontrado")
+	return fmt.Errorf("%w: registro de inventario no encontrado", utils.ErrRegistroNoEncontrado)
 }
 
 // La comparación utiliza las relaciones del registro en lugar de agregar

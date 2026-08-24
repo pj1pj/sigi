@@ -54,6 +54,7 @@ func (m *Menu) reporteGeneral() {
 	fmt.Println()
 	fmt.Println("IMPORTACIONES")
 	fmt.Printf("Total: %d\n", reporte.TotalImportaciones)
+	fmt.Printf("En preparación: %d\n", reporte.ImportacionesEnPreparacion)
 	fmt.Printf("En transito: %d\n", reporte.ImportacionesEnTransito)
 	fmt.Printf("En aduana: %d\n", reporte.ImportacionesEnAduana)
 	fmt.Printf("En bodega: %d\n", reporte.ImportacionesEnBodega)

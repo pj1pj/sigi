@@ -2,12 +2,16 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"sync"
 
 	"sigi/interfaces"
 	"sigi/models"
+	"sigi/utils"
 )
 
 type TransporteRepositoryMemoria struct {
+	mu          sync.RWMutex
 	transportes []*models.Transporte
 }
 
@@ -18,12 +22,16 @@ func NuevoTransporteRepository() interfaces.TransporteRepository {
 }
 
 func (r *TransporteRepositoryMemoria) Agregar(transporte *models.Transporte) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if transporte == nil {
 		return errors.New("el transporte no puede ser nil")
 	}
 
-	if _, err := r.BuscarPorCodigo(transporte.Codigo()); err == nil {
-		return errors.New("ya existe un transporte con ese código")
+	for _, existente := range r.transportes {
+		if existente.Codigo() == transporte.Codigo() {
+			return fmt.Errorf("%w: ya existe un transporte con ese código", utils.ErrRegistroDuplicado)
+		}
 	}
 
 	r.transportes = append(r.transportes, transporte)
@@ -32,20 +40,26 @@ func (r *TransporteRepositoryMemoria) Agregar(transporte *models.Transporte) err
 }
 
 func (r *TransporteRepositoryMemoria) BuscarPorCodigo(codigo string) (*models.Transporte, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	for _, transporte := range r.transportes {
 		if transporte.Codigo() == codigo {
 			return transporte, nil
 		}
 	}
 
-	return nil, errors.New("transporte no encontrado")
+	return nil, fmt.Errorf("%w: transporte no encontrado", utils.ErrRegistroNoEncontrado)
 }
 
 func (r *TransporteRepositoryMemoria) ObtenerTodos() []*models.Transporte {
-	return r.transportes
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return append([]*models.Transporte(nil), r.transportes...)
 }
 
 func (r *TransporteRepositoryMemoria) Actualizar(transporte *models.Transporte) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if transporte == nil {
 		return errors.New("el transporte no puede ser nil")
 	}
@@ -57,10 +71,12 @@ func (r *TransporteRepositoryMemoria) Actualizar(transporte *models.Transporte) 
 		}
 	}
 
-	return errors.New("transporte no encontrado")
+	return fmt.Errorf("%w: transporte no encontrado", utils.ErrRegistroNoEncontrado)
 }
 
 func (r *TransporteRepositoryMemoria) Eliminar(codigo string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	for indice, transporte := range r.transportes {
 		if transporte.Codigo() == codigo {
 			r.transportes = append(
@@ -71,5 +87,5 @@ func (r *TransporteRepositoryMemoria) Eliminar(codigo string) error {
 		}
 	}
 
-	return errors.New("transporte no encontrado")
+	return fmt.Errorf("%w: transporte no encontrado", utils.ErrRegistroNoEncontrado)
 }

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"sigi/interfaces"
@@ -31,20 +31,24 @@ func (s *ProveedorService) Registrar(
 	telefono string,
 	correo string,
 ) (*models.Proveedor, error) {
-	if strings.TrimSpace(empresa) == "" {
-		return nil, errors.New("la empresa del proveedor es obligatoria")
+	if !utils.TextoValido(empresa) {
+		return nil, fmt.Errorf("%w: la empresa del proveedor es obligatoria", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(pais) == "" {
-		return nil, errors.New("el pais del proveedor es obligatorio")
+	if !utils.TextoValido(pais) {
+		return nil, fmt.Errorf("%w: el pais del proveedor es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(contacto) == "" {
-		return nil, errors.New("el contacto del proveedor es obligatorio")
+	if !utils.TextoValido(contacto) {
+		return nil, fmt.Errorf("%w: el contacto del proveedor es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(telefono) == "" {
-		return nil, errors.New("el telefono del proveedor es obligatorio")
+	if !utils.TelefonoValido(telefono) {
+		return nil, fmt.Errorf("%w: el telefono del proveedor no es válido", utils.ErrDatoInvalido)
+	}
+
+	if strings.TrimSpace(correo) != "" && !utils.CorreoValido(correo) {
+		return nil, fmt.Errorf("%w: el correo del proveedor no es válido", utils.ErrDatoInvalido)
 	}
 
 	codigo := s.generador.Generar("PRV")
@@ -67,7 +71,7 @@ func (s *ProveedorService) Registrar(
 
 func (s *ProveedorService) Buscar(codigo string) (*models.Proveedor, error) {
 	if strings.TrimSpace(codigo) == "" {
-		return nil, errors.New("el codigo del proveedor es obligatorio")
+		return nil, fmt.Errorf("%w: el codigo del proveedor es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	return s.repository.BuscarPorCodigo(codigo)
@@ -106,11 +110,11 @@ func (s *ProveedorService) ActualizarContacto(
 	correo string,
 ) error {
 	if strings.TrimSpace(contacto) == "" {
-		return errors.New("el contacto es obligatorio")
+		return fmt.Errorf("%w: el contacto es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if strings.TrimSpace(telefono) == "" {
-		return errors.New("el telefono es obligatorio")
+		return fmt.Errorf("%w: el telefono no es válido", utils.ErrDatoInvalido)
 	}
 
 	proveedor, err := s.Buscar(codigo)
@@ -130,7 +134,7 @@ func (s *ProveedorService) Eliminar(codigo string) error {
 	}
 
 	if proveedor.EstaActivo() {
-		return errors.New("no se puede eliminar un proveedor activo")
+		return fmt.Errorf("%w: no se puede eliminar un proveedor activo", utils.ErrOperacionNoPermitida)
 	}
 
 	return s.repository.Eliminar(codigo)

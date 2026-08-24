@@ -1,62 +1,47 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+
+	"sigi/api"
+	"sigi/app"
 	"sigi/menu"
-	"sigi/repository"
-	"sigi/services"
-	"sigi/utils"
 )
 
 func main() {
-	proveedorRepository := repository.NuevoProveedorRepository()
-	ordenRepository := repository.NuevaOrdenRepository()
-	transporteRepository := repository.NuevoTransporteRepository()
-	importacionRepository := repository.NuevaImportacionRepository()
-	inventarioRepository := repository.NuevoInventarioRepository()
+	modo := flag.String("modo", "consola", "modo de ejecución: consola o api")
+	flag.Parse()
 
-	generadorCodigo := utils.NuevoGeneradorCodigo()
+	sistema := app.NuevoSistema()
 
-	proveedorService := services.NuevoProveedorService(
-		proveedorRepository,
-		generadorCodigo,
-	)
+	switch *modo {
+	case "consola":
+		sistemaMenu := menu.NuevoMenu(
+			sistema.ProveedorService,
+			sistema.OrdenService,
+			sistema.TransporteService,
+			sistema.ImportacionService,
+			sistema.InventarioService,
+			sistema.ReporteService,
+		)
+		sistemaMenu.Ejecutar()
 
-	ordenService := services.NuevaOrdenService(
-		ordenRepository,
-		generadorCodigo,
-	)
+	case "api":
+		servidor := api.NuevoServidor(
+			sistema.ProveedorService,
+			sistema.OrdenService,
+			sistema.TransporteService,
+			sistema.ImportacionService,
+			sistema.InventarioService,
+			sistema.ReporteService,
+		)
+		fmt.Println("API SIGI disponible en http://localhost:8080")
+		log.Fatal(http.ListenAndServe("localhost:8080", servidor.Handler()))
 
-	transporteService := services.NuevoTransporteService(
-		transporteRepository,
-		generadorCodigo,
-	)
-
-	inventarioService := services.NuevoInventarioService(
-		inventarioRepository,
-	)
-
-	importacionService := services.NuevaImportacionService(
-		importacionRepository,
-		inventarioService,
-		generadorCodigo,
-	)
-
-	reporteService := services.NuevoReporteService(
-		proveedorRepository,
-		ordenRepository,
-		transporteRepository,
-		importacionRepository,
-		inventarioRepository,
-	)
-
-	sistemaMenu := menu.NuevoMenu(
-		proveedorService,
-		ordenService,
-		transporteService,
-		importacionService,
-		inventarioService,
-		reporteService,
-	)
-
-	sistemaMenu.Ejecutar()
+	default:
+		log.Fatalf("modo no válido: %q. Use consola o api", *modo)
+	}
 }

@@ -2,10 +2,12 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"sigi/interfaces"
 	"sigi/models"
+	"sigi/utils"
 )
 
 type InventarioService struct {
@@ -31,31 +33,31 @@ func (s *InventarioService) ProcesarLlegada(
 	ubicacion string,
 ) error {
 	if importacion == nil {
-		return errors.New("la importación es obligatoria")
+		return fmt.Errorf("%w: la importación es obligatoria", utils.ErrDatoObligatorio)
 	}
 
 	if !importacion.LlegoABodega() {
-		return errors.New("la importación todavía no ha llegado a bodega")
+		return fmt.Errorf("%w: la importación todavía no ha llegado a bodega", utils.ErrOperacionNoPermitida)
 	}
 
 	if strings.TrimSpace(ubicacion) == "" {
-		return errors.New("la ubicación de bodega es obligatoria")
+		return fmt.Errorf("%w: la ubicación de bodega es obligatoria", utils.ErrDatoObligatorio)
 	}
 
 	orden := importacion.Orden()
 	if orden == nil {
-		return errors.New("la importación no tiene una orden asociada")
+		return fmt.Errorf("%w: la importación no tiene una orden asociada", utils.ErrDatoInvalido)
 	}
 
 	proveedor := orden.Proveedor()
 	if proveedor == nil {
-		return errors.New("la orden no tiene un proveedor asociado")
+		return fmt.Errorf("%w: la orden no tiene un proveedor asociado", utils.ErrDatoInvalido)
 	}
 
 	productos := orden.Productos()
 
 	if len(productos) == 0 {
-		return errors.New("la orden no contiene productos")
+		return fmt.Errorf("%w: la orden no contiene productos", utils.ErrDatoInvalido)
 	}
 
 	for _, producto := range productos {
@@ -85,11 +87,11 @@ func (s *InventarioService) AgregarCantidad(
 	cantidad int,
 ) error {
 	if inventario == nil {
-		return errors.New("el registro de inventario es obligatorio")
+		return fmt.Errorf("%w: el registro de inventario es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if cantidad <= 0 {
-		return errors.New("la cantidad debe ser mayor que cero")
+		return fmt.Errorf("%w: la cantidad debe ser mayor que cero", utils.ErrDatoInvalido)
 	}
 
 	inventario.AgregarCantidad(cantidad)
@@ -102,11 +104,11 @@ func (s *InventarioService) RetirarCantidad(
 	cantidad int,
 ) error {
 	if inventario == nil {
-		return errors.New("el registro de inventario es obligatorio")
+		return fmt.Errorf("%w: el registro de inventario es obligatorio", utils.ErrDatoObligatorio)
 	}
 
 	if cantidad <= 0 {
-		return errors.New("la cantidad debe ser mayor que cero")
+		return fmt.Errorf("%w: la cantidad debe ser mayor que cero", utils.ErrDatoInvalido)
 	}
 
 	if !inventario.RetirarCantidad(cantidad) {

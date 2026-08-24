@@ -47,7 +47,7 @@ Reporte general
 * Registrar proveedores.
 * Listar proveedores.
 * Activar y desactivar proveedores.
-* Actualizar información de contacto.
+* Actualizar información de contacto mediante el Service (la consola no expone esta opción).
 * Eliminar proveedores inactivos.
 * Generación automática de códigos.
 
@@ -95,7 +95,7 @@ También permite:
 * Registrar transportes.
 * Listarlos.
 * Activarlos y desactivarlos.
-* Actualizar información de contacto.
+* Actualizar información de contacto mediante el Service (la consola no expone esta opción).
 * Eliminar transportes inactivos.
 
 Códigos automáticos:
@@ -200,6 +200,7 @@ Inactivos
 
 IMPORTACIONES
 Total
+En preparación
 En tránsito
 En aduana
 En bodega
@@ -262,6 +263,15 @@ sigi/
     ├── errors.go
     ├── input.go
     └── validation.go
+
+├── api/
+│   ├── dto.go
+│   ├── response.go
+│   ├── server.go
+│   └── server_test.go
+
+└── app/
+    └── sistema.go
 ```
 
 ---
@@ -311,6 +321,9 @@ Cada prefijo posee su propio contador.
 | 🔌 Interfaces | Abstracción de repositorios         |
 | 📦 Packages   | Organización modular                |
 | 💾 Memoria    | Almacenamiento durante la ejecución |
+| 🌐 `net/http` | Servidor y endpoints HTTP           |
+| 🧾 `encoding/json` | Serialización y deserialización JSON |
+| 🧪 `httptest` | Pruebas de la API sin red externa    |
 
 > No se utiliza una base de datos ni librerías externas.
 
@@ -345,6 +358,131 @@ cd sigi/sigi
 go run .
 ```
 
+El modo predeterminado es la aplicación de consola. También puede indicarse
+explícitamente:
+
+```bash
+go run . -modo consola
+```
+
+## 🌐 API HTTP y JSON
+
+SIGI incluye una API HTTP basada únicamente en `net/http` y `encoding/json` de
+la biblioteca estándar. Para iniciarla en `localhost:8080`:
+
+```bash
+go run . -modo api
+```
+
+Los datos se almacenan en memoria, por lo que se reinician cuando se detiene el
+proceso. Cada ejecución usa un sistema independiente: el modo consola y el modo
+API no comparten datos entre procesos.
+
+### Endpoints
+
+| Método | Ruta | Funcionalidad |
+| --- | --- | --- |
+| `POST` | `/api/v1/proveedores` | Registrar proveedor |
+| `GET` | `/api/v1/proveedores` | Listar proveedores |
+| `GET` | `/api/v1/proveedores/{codigo}` | Consultar proveedor |
+| `PATCH` | `/api/v1/proveedores/{codigo}/estado` | Activar o desactivar proveedor |
+| `POST` | `/api/v1/transportes` | Registrar transporte |
+| `GET` | `/api/v1/transportes` | Listar transportes |
+| `POST` | `/api/v1/ordenes` | Crear orden de compra |
+| `POST` | `/api/v1/ordenes/{codigo}/productos` | Agregar producto a una orden |
+| `PATCH` | `/api/v1/ordenes/{codigo}/confirmacion` | Confirmar una orden |
+| `GET` | `/api/v1/ordenes` | Listar órdenes |
+| `POST` | `/api/v1/importaciones` | Registrar importación |
+| `PATCH` | `/api/v1/importaciones/{codigo}/tracking` | Avanzar tracking de importación |
+| `GET` | `/api/v1/inventario` | Consultar inventario |
+| `GET` | `/api/v1/reportes/general` | Consultar reporte general |
+
+### Códigos HTTP principales
+
+- `200 OK`: consulta o actualización exitosa.
+- `201 Created`: creación exitosa de proveedor, transporte, orden o importación.
+- `400 Bad Request`: JSON inválido o datos que no cumplen las validaciones.
+- `404 Not Found`: recurso o ruta inexistente.
+- `405 Method Not Allowed`: método no permitido para una ruta existente.
+- `409 Conflict`: operación incompatible con el estado actual del dominio.
+
+### Ejemplos JSON
+
+Registrar un proveedor:
+
+```json
+{
+  "empresa": "ACME Importaciones",
+  "pais": "China",
+  "contacto": "Li Wei",
+  "telefono": "+86 1234567",
+  "correo": "li@acme.example"
+}
+```
+
+Crear una orden:
+
+```json
+{ "codigo_proveedor": "PRV-0001" }
+```
+
+Agregar un producto:
+
+```json
+{
+  "nombre": "Computadora portátil",
+  "cantidad": 3,
+  "precio_unitario": 850.50
+}
+```
+
+Registrar una importación:
+
+```json
+{
+  "codigo_orden": "ORD-0001",
+  "codigo_transporte": "TRN-0001",
+  "ciudad_origen": "Shenzhen",
+  "ciudad_destino": "Guayaquil"
+}
+```
+
+Actualizar el tracking:
+
+```json
+{ "estado": "En tránsito" }
+```
+
+Para la llegada a bodega se debe indicar la ubicación, lo que genera el
+inventario automáticamente:
+
+```json
+{ "estado": "Llegó a bodega", "ubicacion": "Bodega A-01" }
+```
+
+Ejemplo de respuesta de error uniforme:
+
+```json
+{ "error": "no se puede confirmar una orden sin productos" }
+```
+
+En PowerShell se puede realizar una solicitud así:
+
+```powershell
+$proveedor = @{
+  empresa = "ACME Importaciones"
+  pais = "China"
+  contacto = "Li Wei"
+  telefono = "+86 1234567"
+  correo = "li@acme.example"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method Post `
+  -Uri http://localhost:8080/api/v1/proveedores `
+  -ContentType "application/json" `
+  -Body $proveedor
+```
+
 ---
 
 # 🧪 Verificación
@@ -362,6 +500,17 @@ La salida puede mostrar:
 ```
 
 Esto significa que el paquete no contiene archivos de pruebas automatizadas y **no representa un error**.
+
+El paquete `api` sí contiene pruebas automatizadas con `httptest`. La suite
+comprueba el flujo completo, respuestas JSON, validaciones, recursos
+inexistentes, métodos HTTP no permitidos, transiciones de tracking y generación
+automática de inventario.
+
+También se puede verificar estáticamente el proyecto con:
+
+```bash
+go vet ./...
+```
 
 ---
 
@@ -437,6 +586,46 @@ El proyecto utiliza diferentes conceptos del lenguaje:
 * Funciones
 * Encapsulamiento mediante métodos
 * Separación de responsabilidades
+
+---
+
+## 🎓 Relación con las cuatro unidades
+
+### Unidad 1
+
+El proyecto utiliza sintaxis Go, variables, constantes, condicionales,
+`switch`, ciclos `for`, funciones, métodos, paquetes e importaciones.
+
+### Unidad 2
+
+Se utilizan slices, mapas, structs, punteros, constructores y métodos para
+modelar proveedores, órdenes, productos, transportes, importaciones e inventario.
+
+### Unidad 3
+
+Los modelos mantienen campos privados y exponen métodos de acceso. Las
+interfaces de repositorio desacoplan los Services de los repositorios en
+memoria y permiten polimorfismo mediante inyección de dependencias. Los
+errores identificables se comparten mediante `utils/errors.go`.
+
+### Unidad 4
+
+La API utiliza servicios web HTTP con `net/http` y serialización JSON con
+`encoding/json`. Las pruebas HTTP utilizan `httptest`. El servidor recibe
+solicitudes concurrentes y protege los repositorios, el generador de códigos y
+el acceso a los modelos compartidos mediante mutexes. No se agregaron
+goroutines ni canales artificiales porque la lógica de negocio no requiere una
+tarea asíncrona independiente.
+
+## Limitaciones y mejoras futuras
+
+Actualmente los datos se almacenan solo en memoria, no existe autenticación y
+la API no expone todas las operaciones disponibles en los Services, como
+actualización de contactos o cancelación de órdenes. Tampoco hay persistencia,
+paginación ni configuración externa del puerto. Como mejoras futuras se
+podrían agregar una base de datos, autenticación, apagado graceful, métricas,
+paginación y endpoints adicionales sin trasladar reglas de negocio fuera de
+los Services.
 
 ---
 
