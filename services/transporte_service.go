@@ -115,12 +115,15 @@ func (s *TransporteService) ActualizarContacto(
 	telefono string,
 	correo string,
 ) error {
-	if strings.TrimSpace(contacto) == "" {
+	if !utils.TextoValido(contacto) {
 		return fmt.Errorf("%w: el contacto es obligatorio", utils.ErrDatoObligatorio)
 	}
 
-	if strings.TrimSpace(telefono) == "" {
+	if !utils.TelefonoValido(telefono) {
 		return fmt.Errorf("%w: el telefono no es válido", utils.ErrDatoInvalido)
+	}
+	if strings.TrimSpace(correo) != "" && !utils.CorreoValido(correo) {
+		return fmt.Errorf("%w: el correo no es válido", utils.ErrDatoInvalido)
 	}
 
 	transporte, err := s.Buscar(codigo)
