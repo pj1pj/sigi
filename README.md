@@ -512,6 +512,11 @@ También se puede verificar estáticamente el proyecto con:
 go vet ./...
 ```
 
+Cuando el entorno tiene CGo y un compilador C disponible, también puede
+ejecutarse `go test -race ./...` para detectar carreras de datos. La API y sus
+componentes en memoria están protegidos con mutexes para atender solicitudes
+concurrentes de forma segura.
+
 ---
 
 # 🧹 Formatear código
