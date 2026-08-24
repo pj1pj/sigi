@@ -148,6 +148,8 @@ func TestErroresJSONUniformes(t *testing.T) {
 
 	respuesta = solicitud(t, servidor, http.MethodPost, "/api/v1/proveedores/PRV-9999", "{}")
 	debeTenerEstado(t, respuesta, http.StatusMethodNotAllowed)
+	respuesta = solicitud(t, servidor, http.MethodDelete, "/api/v1/transportes", "")
+	debeTenerEstado(t, respuesta, http.StatusMethodNotAllowed)
 }
 
 func TestReglasDeImportacionYValidaciones(t *testing.T) {
