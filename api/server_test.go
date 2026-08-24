@@ -77,6 +77,11 @@ func TestFlujoHTTPCompleto(t *testing.T) {
     }`)
 	debeTenerEstado(t, respuesta, http.StatusCreated)
 	debeSer(t, cuerpoJSON(t, respuesta), "estado", "En preparación")
+	respuesta = solicitud(t, servidor, http.MethodGet, "/api/v1/reportes/general", "")
+	debeTenerEstado(t, respuesta, http.StatusOK)
+	if cuerpoJSON(t, respuesta)["importaciones_en_preparacion"] != float64(1) {
+		t.Fatal("el reporte no contabilizó la importación en preparación")
+	}
 
 	respuesta = solicitud(t, servidor, http.MethodPatch, "/api/v1/importaciones/IMP-0001/tracking", `{"estado":"En tránsito"}`)
 	debeTenerEstado(t, respuesta, http.StatusOK)
