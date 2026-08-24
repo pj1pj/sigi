@@ -28,6 +28,7 @@ func responderError(w http.ResponseWriter, estado int, mensaje string) {
 }
 
 func decodificarJSON(w http.ResponseWriter, r *http.Request, destino any) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	decodificador := json.NewDecoder(r.Body)
 	decodificador.DisallowUnknownFields()
 	if err := decodificador.Decode(destino); err != nil {
