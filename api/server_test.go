@@ -136,6 +136,8 @@ func TestErroresJSONUniformes(t *testing.T) {
 
 	respuesta = solicitud(t, servidor, http.MethodPost, "/api/v1/proveedores", "{invalid")
 	debeTenerEstado(t, respuesta, http.StatusBadRequest)
+	respuesta = solicitud(t, servidor, http.MethodPost, "/api/v1/proveedores", "")
+	debeTenerEstado(t, respuesta, http.StatusBadRequest)
 
 	respuesta = solicitud(t, servidor, http.MethodPost, "/api/v1/proveedores/PRV-9999", "{}")
 	debeTenerEstado(t, respuesta, http.StatusMethodNotAllowed)
